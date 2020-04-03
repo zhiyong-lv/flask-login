@@ -1,7 +1,18 @@
-.env
+# idea
 .idea
-*.pyc
-__pychche__
+
+# Python:
+*.py[cod]
+*.so
+*.egg
+*.egg-info
+dist
+build
+venv
+
+# My configurations:
+.env
+db.ini
+deploy_key_rsa
 backup
 migrations
-venv
