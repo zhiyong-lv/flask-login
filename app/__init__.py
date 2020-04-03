@@ -14,6 +14,7 @@ def init_logger(config):
     logging.basicConfig(
         filename=config.LOG_FILE_NAME,
         format=config.LOG_FORMAT,
+        filemode=config.LOG_FILE_MODE
     )
 
 

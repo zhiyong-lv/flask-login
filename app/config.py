@@ -3,7 +3,13 @@ import os
 
 class Config:
     LOG_FILE_NAME = "logs/app.log"
-    LOG_FORMAT = "[%(asctime)s] [%(levelname)s] [ %(filename)s:%(lineno)s - %(name)s ] %(message)s "
+    # LOG_FORMAT = "[%(asctime)s] [%(levelname)s] [ %(filename)s:%(lineno)s - %(name)s ] %(message)s "
+
+    # ^(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2},\d{3})\s-\s(\S*)\s-\s(\S*)\s-\s(\S*)\s-\s(\S*)\s(.*)$
+    # LOG_FORMAT = "%(asctime)s - %(threadName)s - %(name)s - %(levelname)s - %(message)s"
+    LOG_FORMAT = "%(asctime)s - %(threadName)s - %(name)s - %(levelname)s - %(filename)s:%(lineno)s - %(message)s"
+    # LOG_FORMAT = "%(asctime)s %(name)-30s %(levelname)-8s %(message)s"
+    LOG_FILE_MODE = 'w'
 
 
     DATABASE_DIALECT = 'mysql'
