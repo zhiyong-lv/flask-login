@@ -2,6 +2,10 @@ import os
 
 
 class Config:
+    LOG_FILE_NAME = "logs/app.log"
+    LOG_FORMAT = "[%(asctime)s] [%(levelname)s] [ %(filename)s:%(lineno)s - %(name)s ] %(message)s "
+
+
     DATABASE_DIALECT = 'mysql'
     DATABASE_DRIVER = 'pymysql'
     DATABASE_USER = os.getenv('DATABASE_USER')

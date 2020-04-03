@@ -1,3 +1,6 @@
+import logging
+import logging.handlers
+
 from flask import Flask
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
@@ -7,9 +10,19 @@ from .config import Config
 db = SQLAlchemy()
 
 
+def init_logger(config):
+    logging.basicConfig(
+        filename=config.LOG_FILE_NAME,
+        format=config.LOG_FORMAT,
+    )
+
+
 def create_app():
+    config = Config()
+    init_logger(config)
+
     app = Flask(__name__)
-    app.config.from_object(Config())
+    app.config.from_object(config)
 
     db.init_app(app)
 
