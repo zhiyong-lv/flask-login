@@ -1,12 +1,14 @@
 from flask_restplus import Api
 
-from .users import api as ns1
+from .home import api as ns_homepage
+from .users import api as ns_users
 
 api = Api(
-    title='My Title',
+    title='Flasky',
     version='1.0',
-    description='A description',
+    description='Flasky is a wiki, and easy to use',
     # All API metadatas
 )
 
-api.add_namespace(ns1)
+api.add_namespace(ns_users)
+api.add_namespace(ns_homepage)

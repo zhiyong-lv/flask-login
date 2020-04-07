@@ -9,6 +9,7 @@
 dist
 build
 venv
+*/__pycache__
 
 # My configurations:
 .env
