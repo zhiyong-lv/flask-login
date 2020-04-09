@@ -1,12 +1,15 @@
 import logging
 
+from flask_login import login_user
+
 from app import db
 from app.models.users import User
 
 
 class UserService:
+
     def __init__(self):
-        self._logger = logging.getLogger()
+        self._logger = logging.getLogger(__name__)
 
     def query_users(self, offset, limit):
         return {
@@ -25,6 +28,17 @@ class UserService:
 
     def get_user(self, id):
         return User.query.get(id)
+
+    def get_users_by_name(self, name):
+        return User.query.filter_by(username=name).first()
+
+    def verify_user(self, name, password):
+        user = User.query.filter_by(username=name).first()
+        if user is not None and user.verify(password):
+            return login_user(user)
+        else:
+            self._logger.info("user({name}'s password is not correct)".format(name=name))
+            return False
 
     def modify_user(self, id, update_data):
         user = User.query.get(id)

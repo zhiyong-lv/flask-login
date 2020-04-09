@@ -1,5 +1,6 @@
 import logging
 
+from flask_login import login_required
 from flask_restplus import Namespace, Resource, fields, abort
 from flask_restplus import reqparse
 
@@ -41,23 +42,33 @@ user_service = UserService()
 
 @api.route('/')
 @api.response(500, 'Internal error')
+@api.response(401, 'UNAUTHORIZED')
 @api.response(400, 'Bad request')
 class UserList(Resource):
-    @api.doc('list_users')
+    @api.doc('list_users', security='apikey')
     @api.expect(paginate_parser, validate=True)
     @api.marshal_list_with(users_output)
+    @login_required
     def get(self):
         '''List all users'''
         args = paginate_parser.parse_args()
 
-        offset = int(args.get('offset', 1))
-        limit = int(args.get('limit', 20))
+        try:
+            offset = int(args.get('offset'))
+        except TypeError:
+            offset = 1
+
+        try:
+            limit = int(args.get('limit'))
+        except TypeError:
+            limit = 20
 
         return user_service.query_users(offset=offset, limit=limit)
 
-    @api.doc('create_users')
+    @api.doc('create_users', security='apikey')
     @api.expect(user_input, validate=True)
     @api.marshal_with(user_output, code=201, description='User created')
+    @login_required
     def post(self):
         '''Creaet user'''
         args = user_parser.parse_args()
@@ -68,10 +79,12 @@ class UserList(Resource):
 @api.response(500, 'Internal error')
 @api.response(400, 'Bad request')
 @api.response(404, 'Not Found')
+@api.response(401, 'UNAUTHORIZED')
 @api.param('id', 'The user identifier')
 class UserList(Resource):
-    @api.doc('get_user')
+    @api.doc('get_user', security='apikey')
     @api.marshal_list_with(user_output, envelope='users')
+    @login_required
     def get(self, id):
         '''Get user by id'''
         user = user_service.get_user(id)
@@ -80,9 +93,10 @@ class UserList(Resource):
 
         return user
 
-    @api.doc('modify_user')
+    @api.doc('modify_user', security='apikey')
     @api.expect(user_input, validate=True)
     @api.marshal_with(user_output, code=201, description='User modified')
+    @login_required
     def put(self, id):
         '''Modify user'''
         args = user_parser.parse_args()
@@ -92,7 +106,8 @@ class UserList(Resource):
 
         return user
 
-    @api.doc('delete_user')
+    @api.doc('delete_user', security='apikey')
+    @login_required
     def delete(self, id):
         '''Delete user by id'''
         user = user_service.delete_user(id)

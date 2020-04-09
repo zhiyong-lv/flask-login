@@ -1,14 +1,17 @@
+import logging
 import os
 
 
 class Config:
     # Service Configuration
     HOSTNAME = os.environ.get('HOSTNAME', 'localhost')
+    ENV = os.environ.get('FLASK_APP', 'development')
 
     # Log configuration
     LOG_FILE_NAME = "logs/app.log"
     LOG_FORMAT = "%(asctime)s - %(threadName)s - %(name)s - %(levelname)s - %(filename)s:%(lineno)s - %(message)s"
     LOG_FILE_MODE = 'w'
+    Log_LEVEL = logging.DEBUG
 
     # Database configuration
     DATABASE_DIALECT = 'mysql'
@@ -35,8 +38,9 @@ class Config:
     # Flask-login Configuration
     LOGIN_DISABLED = os.environ.get('LOGIN_DISABLED', False)
     USE_SESSION_FOR_NEXT = os.environ.get('USE_SESSION_FOR_NEXT', False)
-    SECRET_KEY = os.environ.get('SECRET_KEY')
-    SESSION_PROTECTION = 'strong'
+    # TODO: need ot change default value
+    SECRET_KEY = os.environ.get('SECRET_KEY', 'default for development')
+    # SESSION_PROTECTION = 'strong'
 
     # Github Oauth Configuration
     GITHUB_CLIENT_ID = os.environ.get('GITHUB_CLIENT_ID')
