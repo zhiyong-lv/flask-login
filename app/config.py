@@ -34,6 +34,7 @@ class Config:
         DATABASE_PORT=DATABASE_PORT,
         DATABASE_NAME=DATABASE_NAME
     )
+    SQLALCHEMY_ECHO = os.environ.get('SQLALCHEMY_ECHO', False)
 
     # Flask-login Configuration
     LOGIN_DISABLED = os.environ.get('LOGIN_DISABLED', False)

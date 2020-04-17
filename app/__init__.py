@@ -37,8 +37,8 @@ def create_app():
 
     @app.shell_context_processor
     def make_shell_context():
-        from .models import User
-        return dict(db=db, User=User)
+        from .models import User, Document
+        return dict(db=db, User=User, Document=Document)
 
     Migrate(app, db)
     login_manager.init_app(app)

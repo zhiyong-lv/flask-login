@@ -3,7 +3,7 @@ import logging
 from flask_login import login_user
 
 from app import db
-from app.models.users import User
+from app.models import User
 
 
 class UserService:

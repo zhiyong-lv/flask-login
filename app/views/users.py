@@ -1,10 +1,10 @@
 import logging
 
 from flask_login import login_required
-from flask_restplus import Namespace, Resource, fields, abort
-from flask_restplus import reqparse
+from flask_restplus import Namespace, Resource, fields, abort, reqparse
 
 from app.services import UserService
+from .parsers import generate_paginate_parser
 
 _logger = logging.getLogger(__name__)
 api = Namespace('users', description='Users related operations')
@@ -33,9 +33,7 @@ user_parser.add_argument('name', location='json', help='The user name')
 user_parser.add_argument('email', location='json', help='The user email')
 user_parser.add_argument('password', location='json', help='The user password')
 
-paginate_parser = reqparse.RequestParser()
-paginate_parser.add_argument('offset', location='args', help='The user begin number')
-paginate_parser.add_argument('limit', location='args', help='The max user count which should be returned once')
+paginate_parser = generate_paginate_parser('user')
 
 user_service = UserService()
 
@@ -50,7 +48,7 @@ class UserList(Resource):
     @api.marshal_list_with(users_output)
     @login_required
     def get(self):
-        '''List all users'''
+        """List all users"""
         args = paginate_parser.parse_args()
 
         try:
@@ -70,7 +68,7 @@ class UserList(Resource):
     @api.marshal_with(user_output, code=201, description='User created')
     @login_required
     def post(self):
-        '''Creaet user'''
+        """Creaet user"""
         args = user_parser.parse_args()
         return user_service.add_user(args['name'], args['password'], args['email'])
 
@@ -86,7 +84,7 @@ class UserList(Resource):
     @api.marshal_list_with(user_output, envelope='users')
     @login_required
     def get(self, id):
-        '''Get user by id'''
+        """Get user by id"""
         user = user_service.get_user(id)
         if user is None:
             abort(404)
@@ -98,7 +96,7 @@ class UserList(Resource):
     @api.marshal_with(user_output, code=201, description='User modified')
     @login_required
     def put(self, id):
-        '''Modify user'''
+        """Modify user"""
         args = user_parser.parse_args()
         user = user_service.modify_user(id, args)
         if user is None:
@@ -109,7 +107,7 @@ class UserList(Resource):
     @api.doc('delete_user', security='apikey')
     @login_required
     def delete(self, id):
-        '''Delete user by id'''
+        """Delete user by id"""
         user = user_service.delete_user(id)
         if user is None:
             abort(404)

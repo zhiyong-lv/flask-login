@@ -1,7 +1,7 @@
 from flask_restplus import Api
 
-from .home import api as ns_homepage
-from .session import api as ns_sessions
+from .documents import api as ns_homepage
+from .sessions import api as ns_sessions
 from .users import api as ns_users
 
 authorizations = {

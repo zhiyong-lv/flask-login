@@ -56,7 +56,7 @@ class Session(Resource):
     @api.doc('create_session', security=None)
     @api.expect(session_json, validate=True)
     def post(self):
-        '''Creaet session'''
+        """Creaet session"""
         args = user_parser.parse_args()
         try:
             name = args['name']
