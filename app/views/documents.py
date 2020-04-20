@@ -19,7 +19,7 @@ document_reversion_parser.add_argument('reversion', location='args', help='The d
 document_input = api.model('Document Input', {
     'title': fields.String(required=True, description='The document title'),
     'content': fields.String(required=True, description='The document content'),
-})
+}, mask='title,content')
 document_output = api.model('Document', {
     'title': fields.String(required=True, description='The document title'),
     'content': fields.String(required=True, description='The document content'),
@@ -64,7 +64,7 @@ class Documents(Resource):
 
     @api.doc('create_document', security='apikey')
     @api.expect(document_input, validate=True)
-    @api.marshal_list_with(document_output)
+    @api.marshal_with(document_output)
     @login_required
     def post(self):
         """Create a new documents"""
@@ -81,7 +81,7 @@ class Documents(Resource):
 @api.response(404, 'Not Found')
 class Document(Resource):
     @api.doc('get_document', security='apikey')
-    @api.marshal_list_with(document_output)
+    @api.marshal_with(document_output)
     @login_required
     def get(self, doc_id):
         document = document_service.get_documents(doc_id)
@@ -91,7 +91,7 @@ class Document(Resource):
 
     @api.doc('modify_document', security='apikey')
     @api.expect(document_input, validate=True)
-    @api.marshal_list_with(document_output)
+    @api.marshal_with(document_output)
     @login_required
     def put(self, doc_id):
         args = document_input_parser.parse_args()
