@@ -5,7 +5,8 @@ import os
 class Config:
     # Service Configuration
     HOSTNAME = os.environ.get('HOSTNAME', 'localhost')
-    ENV = os.environ.get('FLASK_APP', 'development')
+    FLASK_ENV = os.environ.get('FLASK_ENV', 'development')
+    FLASK_DEBUG = 1 if FLASK_ENV == "development" else 0
 
     # Log configuration
     LOG_FILE_NAME = "logs/app.log"
@@ -46,3 +47,9 @@ class Config:
     # Github Oauth Configuration
     GITHUB_CLIENT_ID = os.environ.get('GITHUB_CLIENT_ID')
     GITHUB_CLIENT_SECRET = os.environ.get('GITHUB_CLIENT_SECRET')
+
+    CACHE_REDIS_HOST = os.environ.get('FLASK_APP_CACHE_REDIS_HOST', "redis.flasky-lzy.com")
+    CACHE_REDIS_PORT = os.environ.get('FLASK_APP_CACHE_REDIS_PORT', "6379")
+    CACHE_TYPE = os.environ.get('FLASK_APP_CACHE_TYPE', "redis")
+    CACHE_KEY_PREFIX = os.environ.get('FLASK_APP_CACHE_KEY_PREFIX', "flasky_")
+    CACHE_DEFAULT_TIMEOUT = os.environ.get('FLASK_APP_CACHE_DEFAULT_TIMEOUT', "300")

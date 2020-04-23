@@ -7,7 +7,7 @@ from flask_restplus import Namespace, Resource, fields
 from flask_restplus import reqparse, abort
 
 from app import login_manager
-from app.services import UserService
+from .service_util import user_service
 
 _logger = logging.getLogger(__name__)
 api = Namespace('sessions', description='Users related operations')
@@ -20,8 +20,6 @@ session_json = api.model('Session Input', {
 user_parser = reqparse.RequestParser()
 user_parser.add_argument('name', location='json', help='The user name')
 user_parser.add_argument('password', location='json', help='The user password')
-
-user_service = UserService()
 
 
 @login_manager.user_loader

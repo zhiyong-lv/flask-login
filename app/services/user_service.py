@@ -2,7 +2,7 @@ import logging
 
 from flask_login import login_user
 
-from app import db
+from app import db, cache
 from app.models import User
 
 
@@ -11,7 +11,10 @@ class UserService:
     def __init__(self):
         self._logger = logging.getLogger(__name__)
 
+    @cache.memoize()
     def query_users(self, offset, limit):
+        import time
+        time.sleep(5)
         return {
             'users': User.query.offset(offset - 1).limit(limit).all(),
             'count': User.query.count(),
@@ -26,7 +29,11 @@ class UserService:
         db.session.commit()
         return user
 
+
+    @cache.memoize()
     def get_user(self, id):
+        import time
+        time.sleep(5)
         return User.query.get(id)
 
     def get_users_by_name(self, name):

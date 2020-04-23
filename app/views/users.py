@@ -3,8 +3,8 @@ import logging
 from flask_login import login_required
 from flask_restplus import Namespace, Resource, fields, abort, reqparse
 
-from app.services import UserService
 from .parsers import generate_paginate_parser
+from .service_util import user_service
 
 _logger = logging.getLogger(__name__)
 api = Namespace('users', description='Users related operations')
@@ -35,8 +35,6 @@ user_parser.add_argument('password', location='json', help='The user password')
 
 paginate_parser = generate_paginate_parser('user')
 
-user_service = UserService()
-
 
 @api.route('/')
 @api.response(500, 'Internal error')
@@ -47,6 +45,7 @@ class UserList(Resource):
     @api.expect(paginate_parser, validate=True)
     @api.marshal_list_with(users_output)
     @login_required
+    # @cache.cached()
     def get(self):
         """List all users"""
         args = paginate_parser.parse_args()

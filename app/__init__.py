@@ -4,11 +4,13 @@ from flask import Flask
 from flask_login import LoginManager
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
+from flask_caching import Cache
 
 from .config import Config
 
 db = SQLAlchemy()
 login_manager = LoginManager()
+cache = Cache()
 
 
 def init_logger(config):
@@ -27,6 +29,8 @@ def create_app():
 
     app = Flask(__name__)
     app.config.from_object(config)
+
+    cache.init_app(app)
 
     db.init_app(app)
 
