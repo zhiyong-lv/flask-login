@@ -245,7 +245,8 @@ class AwsS3Service(object):
     def copy_object(self, bucket_name, src_key, key, **kwargs):
         try:
             copysource = {'Bucket': bucket_name, 'Key': src_key}
-            response = self.s3_resource.meta.client.copy(copysource, bucket_name, key, **kwargs)
+            # response = self.s3_resource.meta.client.copy(copysource, bucket_name, key, **kwargs)
+            response = self.s3_client.copy_object(Bucket=bucket_name, Key=key, CopySource=copysource)
             return response
         except ClientError as e:
             logging.exception(e)
