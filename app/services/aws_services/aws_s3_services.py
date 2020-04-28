@@ -6,6 +6,7 @@ from botocore.exceptions import ClientError
 
 class AwsS3Service(object):
     def __init__(self, region=None):
+        self._logger = logging.getLogger(__name__)
         try:
             self.s3_resource = boto3.resource('s3')
             if region is None:
@@ -13,7 +14,7 @@ class AwsS3Service(object):
             else:
                 self.s3_client = boto3.client('s3', region_name=region)
         except ClientError as e:
-            logging.error(e)
+            self._logger.error(e)
             raise e
 
     def create_bucket(self, bucket_name, region=None, **kwargs):
@@ -37,7 +38,7 @@ class AwsS3Service(object):
                                              CreateBucketConfiguration=location)
             return True
         except ClientError as e:
-            logging.error(e)
+            self._logger.error(e)
             return False
 
     def upload_file(self, file_name, bucket, object_name=None, extra_args=None, callback=None, config=None):
@@ -69,7 +70,7 @@ class AwsS3Service(object):
                                                   Config=config)
             return True
         except ClientError as e:
-            logging.error(e)
+            self._logger.error(e)
             return False
 
     def download_file(self, bucket, object_name, file_name=None, extra_args=None, callback=None, config=None):
@@ -102,7 +103,7 @@ class AwsS3Service(object):
                                                     Config=config)
             return True
         except ClientError as e:
-            logging.error(e)
+            self._logger.error(e)
             return False
 
     def generate_presigned_post(self, bucket, object_name, fields=None, conditions=None, expiresin=3600):
@@ -131,7 +132,7 @@ class AwsS3Service(object):
                                                               ExpiresIn=expiresin)
             return response
         except ClientError as e:
-            logging.error(e)
+            self._logger.error(e)
             return None
 
     def generate_presigned_url(self, bucket, object_name, fields=None, conditions=None, expiresin=3600):
@@ -160,7 +161,7 @@ class AwsS3Service(object):
                                                               ExpiresIn=expiresin)
             return response
         except ClientError as e:
-            logging.error(e)
+            self._logger.error(e)
             return None
 
     def create_presigned_url(self, bucket_name, object_name, expiration=3600):
@@ -182,7 +183,7 @@ class AwsS3Service(object):
             # The response contains the presigned URL
             return response
         except ClientError as e:
-            logging.error(e)
+            self._logger.error(e)
             return None
 
     def get_bucket_cors(self, bucket_name):
@@ -202,7 +203,7 @@ class AwsS3Service(object):
                 return []
             else:
                 # AllAccessDisabled error == bucket not found
-                logging.error(e)
+                self._logger.error(e)
                 return None
 
     def set_bucket_cors(self, bucket_name, cors_configuration):
@@ -227,7 +228,7 @@ class AwsS3Service(object):
             response = self.s3_client.put_bucket_cors(Bucket=bucket_name, CORSConfiguration=cors_configuration)
             return True
         except ClientError as e:
-            logging.error(e)
+            self._logger.error(e)
             return False
 
     def get_object(self, bucket_name, key, **kwargs):
@@ -239,15 +240,14 @@ class AwsS3Service(object):
             )
             return response
         except ClientError as e:
-            logging.error(e)
+            self._logger.error(e)
             return None
 
     def copy_object(self, bucket_name, src_key, key, **kwargs):
         try:
             copysource = {'Bucket': bucket_name, 'Key': src_key}
-            # response = self.s3_resource.meta.client.copy(copysource, bucket_name, key, **kwargs)
             response = self.s3_client.copy_object(Bucket=bucket_name, Key=key, CopySource=copysource)
             return response
         except ClientError as e:
-            logging.exception(e)
+            self._logger.exception(e)
             return None

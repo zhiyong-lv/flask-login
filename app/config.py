@@ -6,7 +6,7 @@ class Config:
     # Service Configuration
     HOSTNAME = os.environ.get('HOSTNAME', 'localhost')
     FLASK_ENV = os.environ.get('FLASK_ENV', 'development')
-    FLASK_DEBUG = 1 if FLASK_ENV == "development" else 0
+    # FLASK_DEBUG = 1 if FLASK_ENV == "development" else 0
 
     # Log configuration
     LOG_FILE_NAME = "logs/app.log"
@@ -21,7 +21,7 @@ class Config:
     DATABASE_PASSWORD = os.getenv('DATABASE_PASSWORD')
     DATABASE_HOST = os.getenv('DATABASE_HOST')
     DATABASE_PORT = os.getenv('DATABASE_PORT')
-    DATABASE_NAME = 'test_flask_login'
+    DATABASE_NAME = os.environ.get('DATABASE_NAME', 'test_flask_login')
     SQLALCHEMY_TRACK_MODIFICATIONS = True
     SQLALCHEMY_DATABASE_URI = "{DATABASE_DIALECT}+{DATABASE_DRIVER}:" \
                               "//{DATABASE_USER}:{DATABASE_PASSWORD}@" \
