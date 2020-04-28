@@ -24,9 +24,11 @@ class FileServices(BaseService):
                         status=CREATE_STATUS.value)
             db.session.add(file)
             db.session.commit()
+            return file
         except IntegrityError:
             raise FileDuplicated()
-        return file.uuid
+        except Exception:
+            raise FileBaseError
 
     def batch_add_file(self, files):
         try:
@@ -41,7 +43,7 @@ class FileServices(BaseService):
         except Exception:
             raise FileBaseError
 
-    def modify_file(self, uuid, file_name=None, file_size=None):
+    def modify_file(self, uuid, reversion, file_name=None, file_size=None):
         file = File.query.get(uuid)
         if file is None or file.valid == False:
             # raise FileNotFound exception when file is not existed in files table or file is invalid.
@@ -51,8 +53,10 @@ class FileServices(BaseService):
             file.file_name = file_name
         if file_size is not None:
             file.file_size = file_size
+        if reversion is not None:
+            file.reversion = file.reversion + 1
 
-        file.reversion = file.reversion + 1
+
         db.session.commit()
         return file
 
