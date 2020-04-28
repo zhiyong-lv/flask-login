@@ -5,6 +5,7 @@ from flask_testing import TestCase
 from app import create_app, db
 from app.config import Config
 
+# logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 logger = logging.getLogger(__name__)
 
 
@@ -14,10 +15,10 @@ class ModelBaseTest(TestCase):
         return create_app()
 
     def setUp(self):
-        db.drop_all()
         logger.debug("create all table")
         db.create_all()
 
     def tearDown(self):
         logger.debug("drop all table")
         db.session.remove()
+        db.drop_all()

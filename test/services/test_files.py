@@ -1,10 +1,9 @@
-import logging
-
+from faker import Faker
 from pytest import raises
 
-from app.services.file_services.exceptions import FileNotFound, FileDuplicated
+from app.services.file_services.exceptions import *
 from app.services.file_services.file_services import FileServices
-from app.services.file_services.file_status import CREATE_STATUS
+from app.services.file_services.file_status import *
 from . import ModelBaseTest
 
 logger = logging.getLogger(__name__)
@@ -72,3 +71,22 @@ class TestFileServices(ModelBaseTest):
         file_services.delete(uuid=uuid)
         with raises(FileNotFound):
             file_services.delete(uuid=uuid)
+
+    def test_query(self):
+        file_services = FileServices()
+        faker = Faker()
+        data = []
+        for i in range(5000):
+            file_name = faker.file_name()
+            file_size = faker.pyint()
+            user_id = faker.pyint()
+            data.append({
+                'file_name': file_name,
+                "file_size": file_size,
+                'user_id': user_id
+            })
+
+        file_services.batch_add_file(data)
+        pagination = file_services.query()
+        assert len(pagination.items) == pagination.per_page
+        assert pagination.total == 5000

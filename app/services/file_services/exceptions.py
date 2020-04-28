@@ -31,3 +31,9 @@ class FileInValid(FileBaseException):
         code = code if code is not None else 400
         super().__init__(message, code)
 
+class FileBaseError(FileBaseException):
+    def __init__(self, message=None, code=None):
+        message = message if message is not None else "Internal Error"
+        code = code if code is not None else 500
+        super().__init__(message, code)
+
