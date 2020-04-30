@@ -1,10 +1,12 @@
 import logging
 
+from flask import request
 from flask_login import login_required, current_user
 from flask_restplus import Namespace, Resource, fields, abort, reqparse
 
 from app.services import FileServices
 from app.services.file_services.exceptions import FileNotFound
+from app.schema import file_schema
 
 _logger = logging.getLogger(__name__)
 
@@ -45,8 +47,10 @@ files_output = api.model('FileList', {
 
 @api.route('/')
 @api.response(500, 'Internal error')
+@api.response(404, 'Not Found')
 @api.response(400, 'Validation error')
 @api.response(401, 'UNAUTHORIZED')
+@api.response(201, 'CREATED')
 class Fils(Resource):
     @api.doc('query_files', security='apikey')
     @api.expect(paginate_parser, validate=True)
@@ -73,10 +77,8 @@ class Fils(Resource):
     @login_required
     def post(self):
         """Create a new file"""
-        args = file_input_parser.parse_args()
-        document = file_service.add_file(file_size=args.get('file_size'), file_name=args.get('file_name'),
-                                         user_id=current_user.id)
-        return document
+        document = file_service.add_file(request.json, user_id=current_user.id)
+        return document, 201
 
 
 @api.route('/<string:uuid>')
@@ -100,14 +102,8 @@ class Document(Resource):
     @api.marshal_with(file_output)
     @login_required
     def put(self, uuid):
-        args = file_input_parser.parse_args()
-        _logger.debug(args)
         try:
-            # TODO: reversion is not equal to current reversion value, still could modify file.
-            file = file_service.modify_file(uuid=uuid,
-                                            reversion=args.get('reversion'),
-                                            file_name=args.get('file_name'),
-                                            file_size=args.get('file_size'))
+            file = file_service.modify_file(uuid, request.json)
             return file
         except FileNotFound:
             abort(404)
@@ -117,6 +113,5 @@ class Document(Resource):
     def delete(self, uuid):
         try:
             file_service.logic_delete(uuid)
-        # TODO: Change exception to a more suitable Exception
         except FileNotFound:
             abort(404)

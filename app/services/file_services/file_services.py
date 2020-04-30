@@ -2,6 +2,7 @@ from sqlalchemy.exc import IntegrityError
 
 from app import db
 from app.models.files import File
+from app.schema import file_schema
 from .exceptions import FileNotFound, FileDuplicated, FileBaseError
 from .file_status import CREATE_STATUS
 from ..base_service import BaseService
@@ -18,15 +19,16 @@ class FileServices(BaseService):
         """
         super(FileServices, self).__init__()
 
-    def add_file(self, file_name, file_size, user_id):
+    def add_file(self, file_json, user_id):
         try:
-            file = File(uuid=str(self.uuid()), file_name=file_name, file_size=file_size, creator_id=user_id,
+            file = file_schema.load(file_json, partial=("file_name", "file_size"))
+            file = File(uuid=str(self.uuid()), file_name=file.file_name, file_size=file.file_size, creator_id=user_id,
                         status=CREATE_STATUS.value)
             db.session.add(file)
             db.session.commit()
-            return file
+            return file_schema.dump(file)
         except IntegrityError:
-            raise FileDuplicated()
+            raise FileDuplicated
         except Exception:
             raise FileBaseError
 
@@ -43,29 +45,24 @@ class FileServices(BaseService):
         except Exception:
             raise FileBaseError
 
-    def modify_file(self, uuid, reversion, file_name=None, file_size=None):
-        file = File.query.get(uuid)
-        if file is None or file.valid == False:
-            # raise FileNotFound exception when file is not existed in files table or file is invalid.
-            raise FileNotFound()
-
-        if file_name is not None:
-            file.file_name = file_name
-        if file_size is not None:
-            file.file_size = file_size
-        if reversion is not None:
-            file.reversion = file.reversion + 1
-
-
+    def modify_file(self, uuid, file_json):
+        file = file_schema.load(file_json)
+        reversion, file_name, file_size = file.reversion, file.file_name, file.file_size
+        num = File.query.filter(db.and_(File.uuid == uuid, File.valid == True, File.reversion == reversion)).update(
+            {File.file_name: file_name, File.file_size: file_size, File.reversion: reversion + 1})
         db.session.commit()
-        return file
+
+        if num != 1:
+            raise FileNotFound
+
+        return file_schema.dump(File.query.get(uuid))
 
     def get_file(self, uuid):
-        files = File.query.filter(db.and_(File.uuid == uuid, File.valid == True)).all()
-        if len(files) != 1:
+        file = File.query.filter(db.and_(File.uuid == uuid, File.valid == True)).first()
+        if file is None:
             raise FileNotFound()
         else:
-            return files[0]
+            return file_schema.dump(file)
 
     def delete(self, uuid):
         count = File.query.filter(File.uuid == uuid).delete()

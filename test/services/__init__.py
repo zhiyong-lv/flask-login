@@ -16,6 +16,7 @@ class ModelBaseTest(TestCase):
 
     def setUp(self):
         logger.debug("create all table")
+        db.drop_all()
         db.create_all()
 
     def tearDown(self):

@@ -41,6 +41,9 @@ class Status(type):
     def status_list(cls):
         return cls._status_list
 
+    def field_list(cls, field):
+        return list(cls._map[field].keys())
+
     def get_status(cls, field, val):
         return cls._map[field].get(val, None)
 

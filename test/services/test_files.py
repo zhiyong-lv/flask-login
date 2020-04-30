@@ -10,6 +10,21 @@ logger = logging.getLogger(__name__)
 
 
 class TestFileServices(ModelBaseTest):
+    def test_create_and_modify(self):
+        file_services = FileServices()
+        file = file_services.add_file(file_name="test_file", file_size=12, user_id=10)
+        uuid = file.uuid
+        reversion = file.reversion
+        modified_file = file_services.modify_file(uuid=uuid, reversion=reversion, file_name="test_file2", file_size=13)
+        logger.debug(modified_file)
+        assert modified_file.uuid == uuid and modified_file.file_name == "test_file2" and modified_file.file_size == 13
+        assert modified_file.reversion == 2
+
+    def test_modify_not_existed(self):
+        file_services = FileServices()
+        with raises(FileNotFound):
+            file_services.modify_file(uuid="1234", reversion=1, file_name="test_file2", file_size=13)
+
     def test_add_file_and_get(self):
         file_services = FileServices()
         uuid = file_services.add_file(file_name="test_file", file_size=12, user_id=10).uuid
@@ -28,21 +43,6 @@ class TestFileServices(ModelBaseTest):
         file_services = FileServices()
         with raises(FileNotFound):
             file_services.get_file(uuid="123")
-
-    def test_create_and_modify(self):
-        file_services = FileServices()
-        file = file_services.add_file(file_name="test_file", file_size=12, user_id=10)
-        uuid = file.uuid
-        reversion = file.reversion
-        modified_file = file_services.modify_file(uuid=uuid, reversion=reversion, file_name="test_file2", file_size=13)
-        logger.debug(modified_file)
-        assert modified_file.uuid == uuid and modified_file.file_name == "test_file2" and modified_file.file_size == 13
-        assert modified_file.reversion == 2
-
-    def test_modify_not_existed(self):
-        file_services = FileServices()
-        with raises(FileNotFound):
-            file_services.modify_file(uuid="1234", reversion="1", file_name="test_file2", file_size=13)
 
     def test_logic_delete(self):
         file_services = FileServices()
