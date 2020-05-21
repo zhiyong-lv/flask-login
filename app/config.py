@@ -53,3 +53,5 @@ class Config:
     CACHE_TYPE = os.environ.get('FLASK_APP_CACHE_TYPE', "redis")
     CACHE_KEY_PREFIX = os.environ.get('FLASK_APP_CACHE_KEY_PREFIX', "flasky_")
     CACHE_DEFAULT_TIMEOUT = os.environ.get('FLASK_APP_CACHE_DEFAULT_TIMEOUT', "300")
+
+    RESTPLUS_MASK_SWAGGER = False
