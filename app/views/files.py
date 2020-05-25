@@ -32,16 +32,7 @@ class Fils(Resource):
     def get(self):
         """Query files"""
         args = paginate_parser.parse_args()
-        try:
-            page = int(args.get('page'))
-        except TypeError:
-            page = 1
-
-        try:
-            per_page = int(args.get('per_page'))
-        except TypeError:
-            per_page = 20
-        files = file_service.query(page=page, per_page=per_page)
+        files = file_service.query(**args)
         return files
 
     @api.doc('create_file', security='apikey')

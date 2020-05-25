@@ -13,7 +13,7 @@ class User(db.Model, UserMixin):
     active = db.Column(db.Boolean)
     creator = db.Column(db.String(80))
 
-    def __init__(self, username, email):
+    def __init__(self, username=None, email=None):
         self.username = username
         self.email = email
         self.active = False

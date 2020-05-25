@@ -4,6 +4,7 @@ from flask_login import login_user
 
 from app import db, cache
 from app.models import User
+from app.schema.user_schema import user_schema
 
 
 class UserService:
@@ -12,36 +13,27 @@ class UserService:
         self._logger = logging.getLogger(__name__)
 
     @cache.memoize()
-    def query_users(self, offset, limit):
-        import time
-        time.sleep(5)
-        return {
-            'users': User.query.offset(offset - 1).limit(limit).all(),
-            'count': User.query.count(),
-            'limit': limit,
-            'offset': offset,
-        }
+    def query_users(self, page=None, per_page=None, error_out=True, max_per_page=None):
+        return User.query.paginate(page=page, per_page=per_page, error_out=error_out,
+                                   max_per_page=max_per_page)
 
-    def add_user(self, name, password, email):
-        user = User(username=name, email=email)
-        user.password = password
+    def add_user(self, user_json):
+        user = user_schema.load(user_json, partial=("username", "email", "password"))
         db.session.add(user)
         db.session.commit()
         return user
 
-
     @cache.memoize()
     def get_user(self, id):
-        import time
-        time.sleep(5)
         return User.query.get(id)
 
     def get_users_by_name(self, name):
         return User.query.filter_by(username=name).first()
 
-    def verify_user(self, name, password):
-        user = User.query.filter_by(username=name).first()
-        if user is not None and user.verify(password):
+    def verify_user(self, session_json):
+        input_user = user_schema.load(session_json, partial=("email",))
+        user = User.query.filter_by(username=input_user.username).first()
+        if user is not None and user.verify(session_json['password']):
             return login_user(user)
         else:
             self._logger.info("user({name}'s password is not correct)".format(name=name))
@@ -53,9 +45,10 @@ class UserService:
             print("user is not None when modify user")
             self._logger.info(
                 "user is not None when modify user, user#{id} input is {data}".format(id=id, data=update_data))
-            user.name = update_data['name']
-            user.password = update_data['password']
-            user.name = update_data['email']
+
+            new_user = user_schema.load(update_data, partial=("username", "email"))
+            user.name = new_user.username
+            user.email = new_user.email
             db.session.add(user)
             db.session.commit()
         return user
