@@ -7,12 +7,14 @@ from flask_restplus import Namespace, Resource
 from flask_restplus import abort
 
 from app import login_manager
+from app.services import UserService
 from .models.sessions import session_json
-from .service_util import user_service
 
 _logger = logging.getLogger(__name__)
 api = Namespace('sessions', description='Users related operations')
 api.models[session_json.name] = session_json
+
+user_service = UserService()
 
 
 @login_manager.user_loader

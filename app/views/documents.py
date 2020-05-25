@@ -1,40 +1,20 @@
 import logging
 
+from flask import request
 from flask_login import login_required, current_user
-from flask_restplus import Namespace, Resource, fields, abort, reqparse
+from flask_restplus import Namespace, Resource, abort
 
 from app.services import DocumentService
-from .parsers import generate_paginate_parser, generate_document_input_parser
+from .models.commons import paginate as paginate_parser
+from .models.documents import document_input, document_output, documents_output
 
 _logger = logging.getLogger(__name__)
 
 api = Namespace('documents', path='/documents', description='Home Page')
+api.models[document_input.name] = document_input
+api.models[document_output.name] = document_output
+api.models[documents_output.name] = documents_output
 document_service = DocumentService()
-paginate_parser = generate_paginate_parser('document')
-document_input_parser = generate_document_input_parser()
-
-document_reversion_parser = reqparse.RequestParser()
-document_reversion_parser.add_argument('reversion', location='args', help='The document reversion')
-
-document_input = api.model('Document Input', {
-    'title': fields.String(required=True, description='The document title'),
-    'content': fields.String(required=True, description='The document content'),
-}, mask='title,content')
-document_output = api.model('Document', {
-    'title': fields.String(required=True, description='The document title'),
-    'content': fields.String(required=True, description='The document content'),
-    'id': fields.String(required=True, description='The document identifier'),
-    'creator_id': fields.String(required=True, description="The creaator's id"),
-    'create_time': fields.String(required=True, description="The document create time"),
-    'last_modify_time': fields.String(required=True, description="The document last update time"),
-    'reversion': fields.String(required=True, description="The document reversion"),
-})
-documents_output = api.model('DocumentList', {
-    'documents': fields.Nested(document_output),
-    'limit': fields.Integer(required=True, description='The max document count which should be returned once.'),
-    'offset': fields.Integer(required=True, description='The document begin number'),
-    'count': fields.Integer(required=True, description='The document count'),
-})
 
 
 @api.route('/')
@@ -48,29 +28,16 @@ class Documents(Resource):
     @login_required
     def get(self):
         """Query documents"""
-        args = paginate_parser.parse_args()
-        try:
-            offset = int(args.get('offset'))
-        except TypeError:
-            offset = 1
-
-        try:
-            limit = int(args.get('limit'))
-        except TypeError:
-            limit = 20
-        documents = document_service.query_documents(offset=offset, limit=limit)
-        _logger.debug(documents)
-        return documents
+        return document_service.query_documents(**paginate_parser.parse_args())
 
     @api.doc('create_document', security='apikey')
     @api.expect(document_input, validate=True)
-    @api.marshal_with(document_output)
+    @api.response(201, 'CREATED', document_output)
     @login_required
     def post(self):
         """Create a new documents"""
-        args = document_input_parser.parse_args()
-        document = document_service.add_documents(title=args.get('title'), content=args.get('content'),
-                                                  creator_id=current_user.id)
+        document = document_service.add_documents(request.json, creator_id=current_user.id)
+        _logger.info(document)
         return document
 
 
@@ -94,11 +61,7 @@ class Document(Resource):
     @api.marshal_with(document_output)
     @login_required
     def put(self, doc_id):
-        args = document_input_parser.parse_args()
-        _logger.debug(args)
-        document = document_service.modify_documents(doc_id=doc_id,
-                                                     title=args.get('title'),
-                                                     content=args.get('content'))
+        document = document_service.modify_documents(request.json, doc_id=doc_id)
         if document is None:
             abort(404)
         return document

@@ -8,13 +8,13 @@ from app.services import UserService
 from .models.commons import paginate
 from .models.users import user_input, user_output, users_output, user_basic
 
-user_service = UserService()
-
 _logger = logging.getLogger(__name__)
 api = Namespace('users', description='Users related operations')
 api.models[user_input.name] = user_input
 api.models[user_output.name] = user_output
 api.models[users_output.name] = users_output
+
+user_service = UserService()
 
 
 @api.route('/')

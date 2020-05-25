@@ -2,6 +2,7 @@ import logging
 
 from app import db
 from app.models import Document, User
+from app.schema.document_schema import doc_schema
 
 
 class DocumentService:
@@ -17,17 +18,14 @@ class DocumentService:
             # TODO: change a more suitable exception
             raise e
 
-    def modify_documents(self, doc_id, **kwargs):
+    def modify_documents(self, doc_json, doc_id):
         try:
-            count = Document.query.filter(Document.id == doc_id).update(kwargs)
-            self._logger.debug("count is {}".format(count))
+            input_doc = doc_schema.load(doc_json, partial=("title", "content"))
+            doc = Document.query.filter_by(id=doc_id).with_for_update().first()
+            doc.title = input_doc.title
+            doc.content = input_doc.content
             db.session.commit()
-            if count > 0:
-                document = Document.query.get(doc_id)
-                return document
-            else:
-                # TODO: change to a more sensible exception.
-                raise Exception()
+            return doc
         except Exception as e:
             self._logger.exception(e)
             # TODO: change a more suitable exception
@@ -47,42 +45,33 @@ class DocumentService:
             # TODO: change a more suitable exception
             raise e
 
-    def add_documents(self, title, content, creator_id):
+    def add_documents(self, json, creator_id):
         try:
-            document = Document(title=title, content=content, creator_id=creator_id)
-            db.session.add(document)
+            doc = doc_schema.load(json, partial=("title", "content"))
+            doc.creator_id = creator_id
+            # document = Document(title=doc.title, content=doc.content, creator_id=creator_id)
+            db.session.add(doc)
             db.session.commit()
-            return document
+            return doc_schema.dump(doc)
         except Exception as e:
             self._logger.exception(e)
             # TODO: change a more suitable exception
             raise e
 
-    def query_documents(self, offset, limit, creator=None, title=None):
+    def query_documents(self, page, per_page, error_out=None, max_per_page=None, creator=None, title=None):
         try:
             conditions = {}
-            documents_fields = [Document.id, Document.title, Document.content, Document.creator_id,
-                                Document.create_time, Document.last_modify_time, Document.reversion]
-            documents_key = list(field.name for field in documents_fields)
-            query = Document.query.with_entities(*documents_fields)
+            query = Document.query
             if title is not None:
                 conditions['creator'] = creator
                 query = query.filter(Document.title.like("%{title}%".format(title=title)))
             if creator is not None:
                 conditions['title'] = title
                 query = query.filter(User.username.like("%{username}%".format(username=creator)))
+                query = query.outerjoin(User, User.id == Document.creator_id)
 
-            query = query.join(User, User.id == Document.creator_id)
-            documents_list = query.offset(offset - 1).limit(limit).all()
-
-            result = {
-                'documents': list(dict(zip(documents_key, doc)) for doc in documents_list),
-                'conditions': conditions,
-                'count': query.count(),
-                'limit': limit,
-                'offset': offset,
-            }
-            return result
+            return query.paginate(page=page, per_page=per_page, error_out=error_out,
+                                  max_per_page=max_per_page)
         except Exception as e:
             self._logger.exception(e)
             # TODO: change a more suitable exception
