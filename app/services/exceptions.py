@@ -1,4 +1,4 @@
-class FileBaseException(Exception):
+class BaseException(Exception):
     def __init__(self, message, code):
         self._msg = message
         self._code = code
@@ -12,33 +12,33 @@ class FileBaseException(Exception):
         return self.code
 
 
-class FileNotFound(FileBaseException):
+class NotFound(BaseException):
     def __init__(self, message=None, code=None):
         message = message if message is not None else "File is not found"
         code = code if code is not None else 404
         super().__init__(message, code)
 
 
-class FileReversionError(FileBaseException):
+class ReversionError(BaseException):
     def __init__(self, message=None, code=None):
         message = message if message is not None else "File's reversion error"
         code = code if code is not None else 400
         super().__init__(message, code)
 
 
-class FileDuplicated(FileBaseException):
+class Duplicated(BaseException):
     def __init__(self, message=None, code=None):
         message = message if message is not None else "File is duplicated"
         code = code if code is not None else 400
         super().__init__(message, code)
 
-class FileInValid(FileBaseException):
+class InValid(BaseException):
     def __init__(self, message=None, code=None):
         message = message if message is not None else "File is invalid"
         code = code if code is not None else 400
         super().__init__(message, code)
 
-class FileBaseError(FileBaseException):
+class BaseError(BaseException):
     def __init__(self, message=None, code=None):
         message = message if message is not None else "Internal Error"
         code = code if code is not None else 500

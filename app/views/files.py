@@ -5,7 +5,7 @@ from flask_login import login_required, current_user
 from flask_restplus import Namespace, Resource, abort
 
 from app.services import FileServices
-from app.services.file_services.exceptions import FileNotFound
+from app.services.exceptions import NotFound
 from .models.commons import paginate as paginate_parser
 from .models.files import file_input, files_output, file_output
 
@@ -58,7 +58,7 @@ class Document(Resource):
         try:
             file = file_service.get_file(uuid)
             return file
-        except FileNotFound:
+        except NotFound:
             abort(404)
 
     @api.doc('modify_file', security='apikey')
@@ -69,7 +69,7 @@ class Document(Resource):
         try:
             file = file_service.modify_file(uuid, request.json)
             return file
-        except FileNotFound:
+        except NotFound:
             abort(404)
 
     @api.doc('delete_file', security='apikey')
@@ -77,5 +77,5 @@ class Document(Resource):
     def delete(self, uuid):
         try:
             file_service.logic_delete(uuid)
-        except FileNotFound:
+        except NotFound:
             abort(404)

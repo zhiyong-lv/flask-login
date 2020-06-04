@@ -1,1 +1,1 @@
-from .file_schema import file_schema, files_schema
+from .file_schemas import file_schema, files_schema

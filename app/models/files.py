@@ -6,7 +6,8 @@ from app import db
 
 
 class File(db.Model):
-    uuid = db.Column(db.String(50), primary_key=True, nullable=False)
+    id = db.Column(INTEGER(unsigned=True), primary_key=True, nullable=False, autoincrement=True)
+    uuid = db.Column(db.String(50), nullable=False)
     file_name = db.Column(db.String(200), nullable=False)
     file_size = db.Column(BIGINT(unsigned=True), nullable=False)
     status = db.Column(TINYINT(unsigned=True), nullable=False, default=0)
@@ -18,6 +19,7 @@ class File(db.Model):
 
     __tablename__ = 'files'
     __table_args__ = (
+        db.UniqueConstraint('uuid', name='unq_idx_uuid'),
         db.UniqueConstraint('file_name', 'creator_id', name='unq_idx_fileName_creatorId'),
     )
 

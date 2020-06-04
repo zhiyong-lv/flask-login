@@ -1,12 +1,15 @@
+import logging
+
 from sqlalchemy.exc import IntegrityError
 
 from app import db
 from app.models.files import File
 from app.schema import file_schema
-from .exceptions import FileNotFound, FileDuplicated, FileBaseError
+from app.services.exceptions import NotFound, Duplicated, BaseError
 from .file_status import CREATE_STATUS
 from ..base_service import BaseService
 
+log = logging.getLogger(__name__)
 VALID = True
 INVALID = False
 
@@ -21,6 +24,7 @@ class FileServices(BaseService):
 
     def add_file(self, file_json, user_id):
         try:
+            log.debug(type(file_schema))
             file = file_schema.load(file_json, partial=("file_name", "file_size"))
             file = File(uuid=str(self.uuid()), file_name=file.file_name, file_size=file.file_size, creator_id=user_id,
                         status=CREATE_STATUS.value)
@@ -28,9 +32,10 @@ class FileServices(BaseService):
             db.session.commit()
             return file_schema.dump(file)
         except IntegrityError:
-            raise FileDuplicated
-        except Exception:
-            raise FileBaseError
+            raise Duplicated
+        except Exception as e:
+            log.exception(e)
+            raise BaseError
 
     def batch_add_file(self, files):
         try:
@@ -41,9 +46,9 @@ class FileServices(BaseService):
             )
             db.session.commit()
         except IntegrityError:
-            raise FileDuplicated
+            raise Duplicated
         except Exception:
-            raise FileBaseError
+            raise BaseError
 
     def modify_file(self, uuid, file_json):
         file = file_schema.load(file_json)
@@ -53,26 +58,28 @@ class FileServices(BaseService):
         db.session.commit()
 
         if num != 1:
-            raise FileNotFound
+            raise NotFound
 
-        return file_schema.dump(File.query.get(uuid))
+        files = File.query.filter(File.uuid == uuid).all()
+        assert len(files) == 1
+        return file_schema.dump(files[0])
 
     def get_file(self, uuid):
         file = File.query.filter(db.and_(File.uuid == uuid, File.valid == True)).first()
         if file is None:
-            raise FileNotFound()
+            raise NotFound()
         else:
             return file_schema.dump(file)
 
     def delete(self, uuid):
         count = File.query.filter(File.uuid == uuid).delete()
         if count != 1:
-            raise FileNotFound()
+            raise NotFound()
 
     def logic_delete(self, uuid):
         count = File.query.filter(db.and_(File.uuid == uuid, File.valid == True)).update({'valid': False})
         if count != 1:
-            raise FileNotFound()
+            raise NotFound()
 
     def query(self, page=None, per_page=None, error_out=True, max_per_page=None):
         return File.query.filter(File.valid == True).paginate(page=page, per_page=per_page, error_out=error_out,

@@ -16,16 +16,17 @@ cache = Cache()
 
 
 def init_logger(config):
-    logging.basicConfig(
-        filename=config.LOG_FILE_NAME,
-        format=config.LOG_FORMAT,
-        filemode=config.LOG_FILE_MODE,
-        level=config.Log_LEVEL
-    )
+    if config.FLASK_ENV != 'test':
+        logging.basicConfig(
+            filename=config.LOG_FILE_NAME,
+            format=config.LOG_FORMAT,
+            filemode=config.LOG_FILE_MODE,
+            level=config.Log_LEVEL
+        )
     return logging.getLogger(__name__)
 
 
-def create_app():
+def create_app() -> Flask:
     '''Initalial application'''
     config = Config()
     logger = init_logger(config)
