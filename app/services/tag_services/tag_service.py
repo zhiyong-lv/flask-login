@@ -36,8 +36,8 @@ class TagService(BaseService):
             if tag is None:
                 raise NotFound(message="tag:{} is not found".format(id))
 
+            FileTag.query.filter(FileTag.tag_id == id).delete()
             db.session.delete(tag)
-            db.session.commit()
             return tag_schema.dump(tag)
         except Exception as e:
             self._logger.exception(e)
@@ -49,10 +49,8 @@ class TagService(BaseService):
             result = Tag.query.filter(Tag.creator_id == creator_id).paginate(page=page, per_page=per_page,
                                                                              error_out=error_out,
                                                                              max_per_page=max_per_page)
-            db.session.commit()
             return result
         except Exception as e:
-            db.session.rollback()
             self._logger.exception(e)
             raise BaseError
 
@@ -82,9 +80,16 @@ class TagService(BaseService):
         try:
             file_schema.load({'uuid': file_uuid}, partial=("uuid",))
             result = Tag.query.join(FileTag, db.and_(Tag.id == FileTag.tag_id, FileTag.file_uuid == file_uuid)).all()
-            # db.session.commit()
             return result
         except Exception as e:
-            # db.session.rollback()
+            self._logger.exception(e)
+            raise BaseError
+
+    def query_tag_files(self, tag_id, **kwargs):
+        try:
+            tag_query = tag_schema.load({'id': tag_id}, partial=("name", "creator_id"))
+            result = Tag.query.join(FileTag, db.and_(Tag.id == tag_query.id)).all()
+            return result
+        except Exception as e:
             self._logger.exception(e)
             raise BaseError

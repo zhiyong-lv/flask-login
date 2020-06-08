@@ -1,5 +1,5 @@
 from faker import Faker
-from pytest import raises, mark, fixture
+from pytest import raises, fixture, mark
 
 from app import db
 from app.services.exceptions import *
@@ -27,6 +27,7 @@ def init_db():
         logger.info("=============end delete all databases")
 
 
+@mark.skip(msg='temp')
 class TestFileServices():
     def test_create_and_modify(self):
         with app.app_context():

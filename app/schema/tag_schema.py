@@ -7,7 +7,7 @@ class TagSchema(Schema):
     class Meta:
         unknown = EXCLUDE
 
-    id = fields.Int(validate=validate.Length(min=0), dump_only=True)
+    id = fields.Int(validate=validate.Range(min=0))
     name = fields.Str(required=True, validate=validate.Length(min=1, max=200))
     creator_id = fields.Int(required=True)
     create_time = fields.DateTime(dump_only=True)
